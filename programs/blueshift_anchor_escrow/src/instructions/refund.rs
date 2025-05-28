@@ -86,11 +86,11 @@ impl<'info> Refund<'info> {
         )?;
         Ok(())
     }
-}
-
-pub fn handler(ctx: Context<Refund>) -> Result<()> {
+    pub fn handler(ctx: Context<Refund>) -> Result<()> {
     // Withdraw and close the Vault (Vault -> Maker)
     ctx.accounts.withdraw_and_close_vault()?;
  
     Ok(())
 }
+}
+

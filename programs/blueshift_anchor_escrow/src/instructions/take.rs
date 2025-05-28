@@ -82,7 +82,7 @@ impl<'info> Take <'info> {
                 authority: self.taker.to_account_info(),
             },
         ),
-        self.escrow.recieve,
+        self.escrow.receive,
         self.mint_b.decimals
     )?;
     Ok(())

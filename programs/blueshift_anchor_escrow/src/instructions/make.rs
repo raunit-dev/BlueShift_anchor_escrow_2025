@@ -57,7 +57,7 @@ impl<'info> Make <'info> {
             maker: self.maker.key(),
             mint_a: self.mint_a.key(),
             mint_b: self.mint_b.key(),
-            recieve: amount,
+            receive: amount,
             bump,
     });
     Ok(())
@@ -82,7 +82,7 @@ impl<'info> Make <'info> {
             CpiContext::new(
                 self.token_program.to_account_info(),
                 TransferChecked {
-                    from: self.maker.to_account_info(),
+                    from: self.maker_ata_a.to_account_info(),
                     mint: self.mint_a.to_account_info(),
                     to: self.vault.to_account_info(),
                     authority: self.maker.to_account_info(),
