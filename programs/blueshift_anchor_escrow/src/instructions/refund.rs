@@ -1,10 +1,11 @@
-use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token_interface::{Mint,TokenAccount,transfer_checked, close_account, TransferChecked, CloseAccount};
 use crate::errors::EscrowError;
 use crate::state::Escrow;
+use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::TokenInterface;
-
+use anchor_spl::token_interface::{
+    close_account, transfer_checked, CloseAccount, Mint, TokenAccount, TransferChecked,
+};
 
 #[derive(Accounts)]
 pub struct Refund<'info> {
@@ -19,9 +20,13 @@ pub struct Refund<'info> {
         has_one = mint_a @ EscrowError::InvalidMintA,
     )]
     pub escrow: Account<'info, Escrow>,
- 
+
     /// Token Accounts
+    #[account(
+        mint::token_program = token_program
+    )]
     pub mint_a: InterfaceAccount<'info, Mint>,
+
     #[account(
         mut,
         associated_token::mint = mint_a,
@@ -37,13 +42,12 @@ pub struct Refund<'info> {
         associated_token::token_program = token_program
     )]
     pub maker_ata_a: InterfaceAccount<'info, TokenAccount>,
- 
+
     /// Programs
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
-
 
 impl<'info> Refund<'info> {
     fn withdraw_and_close_vault(&mut self) -> Result<()> {
@@ -54,7 +58,7 @@ impl<'info> Refund<'info> {
             &self.escrow.seed.to_le_bytes()[..],
             &[self.escrow.bump],
         ]];
- 
+
         // Transfer Token A (Vault -> Maker)
         transfer_checked(
             CpiContext::new_with_signer(
@@ -65,33 +69,30 @@ impl<'info> Refund<'info> {
                     mint: self.mint_a.to_account_info(),
                     authority: self.escrow.to_account_info(),
                 },
-                &signer_seeds
+                &signer_seeds,
             ),
             self.vault.amount,
-            self.mint_a.decimals
+            self.mint_a.decimals,
         )?;
- 
+
         // Close the Vault
-        close_account(
-            CpiContext::new_with_signer(
-                self.token_program.to_account_info(),
-                CloseAccount {
-                    account: self.vault.to_account_info(),
-                    authority: self.escrow.to_account_info(),
-                    destination: self.maker.to_account_info(),
-                },
-                &signer_seeds
-            ),
-        )?;
- 
+        close_account(CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            CloseAccount {
+                account: self.vault.to_account_info(),
+                authority: self.escrow.to_account_info(),
+                destination: self.maker.to_account_info(),
+            },
+            &signer_seeds,
+        ))?;
+
         Ok(())
     }
 }
- 
+
 pub fn handler_refund(ctx: Context<Refund>) -> Result<()> {
     // Withdraw and close the Vault (Vault -> Maker)
     ctx.accounts.withdraw_and_close_vault()?;
- 
-    Ok(())
 
+    Ok(())
 }
