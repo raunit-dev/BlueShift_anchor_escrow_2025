@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token_interface::{Mint,TokenAccount,transfer_checked, close_account, TransferChecked, CloseAccount};
+use anchor_spl::token_interface::{Mint,TokenAccount,transfer_checked,TransferChecked};
 use crate::errors::EscrowError;
 use crate::state::Escrow;
 use anchor_spl::token_interface::TokenInterface;
